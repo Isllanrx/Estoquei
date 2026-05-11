@@ -1,88 +1,148 @@
-# Estoquei - Modern Messaging System
+# Estoquei - Messaging System
 
-Estoquei is a professional-grade, full-stack messaging application built with the MEAN stack (MongoDB, Express, Angular, Node.js). It features a modern, layered architecture designed for scalability, performance, and security.
+Estoquei is a full-stack messaging platform developed using the MEAN stack (MongoDB, Express, Angular, Node.js). The system implements a layered architecture to ensure modularity, scalability, and maintainable code.
 
-## 🏛 Architecture Overview
+## System Architecture
 
-The project follows a **Layered Architecture** pattern, ensuring strict separation of concerns and high maintainability.
+The application follows a traditional client-server model with a decoupled frontend and backend. The backend manages data persistence and business logic, while the frontend handles user interaction and state management.
 
 ```mermaid
 graph TD
-    subgraph Frontend (Angular 18)
-        UI[Standalone Components] --> Signals[Angular Signals]
-        Signals --> Services[Domain Services]
-        Services --> Interceptors[HTTP Interceptors]
+    subgraph Client [Frontend - Angular 18]
+        UI[Standalone Components]
+        Signals[State Management - Signals]
+        Services[API Services]
+        Interceptors[HTTP Interceptors]
+        UI --> Signals
+        Signals --> Services
+        Services --> Interceptors
     end
 
-    subgraph Backend (Node.js/Express)
-        Interceptors --> API[Express API]
-        API --> Controllers[Controllers]
-        Controllers --> BServices[Business Services]
-        BServices --> Models[Mongoose Models]
-        Models --> DB[(MongoDB)]
+    subgraph Server [Backend - Node.js/Express]
+        Routes[API Routes]
+        Controllers[Request Controllers]
+        BServices[Business Logic Services]
+        Models[Data Models - Mongoose]
+        Routes --> Controllers
+        Controllers --> BServices
+        BServices --> Models
     end
 
-    subgraph Security
-        Auth[JWT Authentication]
-        Error[Global Error Handler]
+    subgraph Persistence [Database]
+        DB[(MongoDB)]
+        Models --> DB
     end
+
+    Interceptors -- REST/HTTPS --> Routes
 ```
 
-### Key Technical Enhancements
-- **State Management:** Migrated from `BehaviorSubject` to **Angular Signals** for reactive and optimized change detection.
-- **Backend Layers:** Implemented `Controllers` and `Services` to decouple business logic from HTTP routing.
-- **Data Optimization:** Solved the **N+1 Query Problem** using Mongoose `.populate()`, reducing network overhead by over 80%.
-- **Security:**
-    - Centralized `AuthInterceptor` for automatic JWT management.
-    - Global Error Handling middleware to prevent server crashes.
-    - Protected routes and validated login logic.
-- **DX (Developer Experience):**
-    - Environment-based configurations.
-    - Path aliases and standardized naming conventions.
-    - Clean and documented codebase.
+## Technical Specifications
 
-## 🚀 Getting Started
+### Frontend
+- **Framework:** Angular 18 (Standalone Components architecture).
+- **State Management:** Angular Signals for reactive data flow.
+- **Communication:** HttpClient with centralized interceptors for JWT authentication.
+- **Styling:** Vanilla CSS for component-scoped and global styles.
+- **SSR:** Angular Universal/SSR support.
 
-### Prerequisites
-- Node.js (v18+)
-- MongoDB (running locally or via Atlas)
+### Backend
+- **Runtime:** Node.js.
+- **Framework:** Express.js.
+- **Authentication:** JSON Web Tokens (JWT) with Bcrypt for password hashing.
+- **Middleware:** Centralized error handling and authentication guards.
+- **File Handling:** express-fileupload for media management.
 
-### Installation
+### Database
+- **Provider:** MongoDB.
+- **ODM:** Mongoose.
+- **Design:** Document-oriented with relational references (Population).
 
-1. **Clone the repository:**
-   ```bash
-   git clone https://github.com/estoquei/Estoquei.git
-   cd Estoquei
-   ```
+## Features
 
-2. **Backend Setup:**
-   ```bash
-   cd backend
-   npm install
-   # Create a .env file based on the environment variables mentioned below
-   npm start
-   ```
+- **User Authentication:** Secure signup and login with JWT.
+- **Real-time Messaging:** General and private messaging capabilities.
+- **Media Management:** Support for image uploads in messages.
+- **Role-based Access:** Middleware-level protection for routes and actions.
+- **Optimized Data Fetching:** Implementation of population to resolve N+1 query issues.
 
-3. **Frontend Setup:**
-   ```bash
-   cd frontend
-   npm install
-   npm start
-   ```
+## Prerequisites
 
-## ⚙️ Environment Variables
+- Node.js v18.x or higher
+- npm v9.x or higher
+- MongoDB (Local instance or MongoDB Atlas)
 
-### Backend (`backend/.env`)
-- `PORT`: Server port (default: 3000)
-- `MONGODB_URI`: MongoDB connection string
-- `JWT_SECRET`: Secret key for token generation
-- `NODE_ENV`: `development` or `production`
+## Installation and Configuration
 
-## 🛠 Tech Stack
-- **Frontend:** Angular 18, TypeScript, Vanilla CSS.
-- **Backend:** Node.js, Express, Mongoose.
-- **Database:** MongoDB.
-- **Security:** JWT, Bcrypt.
+### 1. Clone the Repository
+```bash
+git clone https://github.com/estoquei/Estoquei.git
+cd Estoquei
+```
 
-## 📝 License
-This project is for educational and professional demonstration purposes.
+### 2. Backend Configuration
+Navigate to the backend directory and install dependencies:
+```bash
+cd backend
+npm install
+```
+
+Create a `.env` file in the `backend` directory:
+```env
+PORT=3000
+MONGODB_URI=your_mongodb_connection_string
+JWT_SECRET=your_jwt_secret_key
+```
+
+### 3. Frontend Configuration
+Navigate to the frontend directory and install dependencies:
+```bash
+cd ../frontend
+npm install
+```
+
+## Running the Application
+
+### Development Environment
+
+**Start Backend:**
+```bash
+cd backend
+npm run dev
+```
+
+**Start Frontend:**
+```bash
+cd frontend
+npm start
+```
+
+The application will be available at `http://localhost:4200`.
+
+## Project Structure
+
+```text
+Estoquei/
+├── backend/
+│   ├── controllers/    # Request handling logic
+│   ├── middlewares/    # Auth and error middlewares
+│   ├── models/         # Mongoose schemas
+│   ├── routes/         # Express route definitions
+│   ├── services/       # Business logic layer
+│   └── server.js       # Entry point
+├── frontend/
+│   ├── src/
+│   │   ├── app/
+│   │   │   ├── login/           # Login component
+│   │   │   ├── signup/          # Signup component
+│   │   │   ├── message/         # General messaging component
+│   │   │   ├── private-message/ # Private messaging component
+│   │   │   ├── guards/          # Route protection
+│   │   │   ├── services/        # Data services
+│   │   │   └── app.routes.ts    # Frontend routing
+│   │   └── environments/        # Environment configurations
+└── README.md
+```
+
+## License
+
+This project is intended for educational and professional demonstration purposes.
