@@ -3,80 +3,71 @@
     <div class="user-info">
       <label class="image-upload-label">
         <img
-          [src]="getImageUrl(currentUser?.imagem || '/images/default.png')"
-          [alt]="currentUser?.nome"
+          [src]="getImageUrl(currentUser()?.imagem || '')"
+          [alt]="currentUser()?.nome"
           class="user-avatar"
           (error)="onImageError($event)"
         />
       </label>
-      <span class="user-name">{{ currentUser?.nome }}</span>
-      <label class="change-image-button" for="image-upload">
-        Mudar imagem
-        <input
-          type="file"
-          id="image-upload"
-          accept="image/*"
-          (change)="onImageSelected($event)"
-          style="display: none"
-        />
-      </label>
+      <span class="user-name">{{ currentUser()?.nome }}</span>
     </div>
     <button (click)="logout()" class="logout-button">Logout</button>
   </div>
 
   <div class="message-list">
-    <div *ngFor="let message of messages" class="message-item">
+    <!-- Use publicMessages computed signal -->
+    <div *ngFor="let message of publicMessages()" class="message-item">
       <div class="message-user">
         <img
-          [src]="getImageUrl(message.user.imagem)"
-          [alt]="message.user.nome"
+          [src]="getImageUrl(message.autorId.imagem)"
+          [alt]="message.autorId.nome"
           class="user-avatar"
           (error)="onImageError($event)"
         />
-        <span class="user-name">{{ message.user.nome }}</span>
-        <span *ngIf="message.destination" class="private-message-indicator">
-          (Mensagem privada)
-        </span>
+        <span class="user-name">{{ message.autorId.nome }}</span>
       </div>
+      
       <div
         class="message-content"
         [ngClass]="'message-content-type-' + message.type"
       >
-        <div *ngIf="!message.isEditing">
+        <!-- Edit Mode Logic using Signal editingMessageId -->
+        <div *ngIf="editingMessageId() !== message._id">
           <p>{{ message.content }}</p>
-          <span class="message-time">{{
-            message.timestamp | date : "short"
-          }}</span>
+          <span class="message-time">{{ message.createdAt | date : "short" }}</span>
+          
           <div
             class="message-actions"
-            *ngIf="currentUser?._id === message.user._id"
+            *ngIf="currentUser()?._id === message.autorId._id"
           >
             <button
               class="action-button edit-button"
               (click)="startEdit(message)"
             >
-              <i class="fas fa-edit"></i>
+              <i class="fas fa-edit"></i> Editar
             </button>
             <button
               class="action-button delete-button"
               (click)="deleteMessage(message)"
             >
-              <i class="fas fa-trash"></i>
+              <i class="fas fa-trash"></i> Excluir
             </button>
           </div>
         </div>
-        <div *ngIf="message.isEditing" class="edit-form">
+
+        <div *ngIf="editingMessageId() === message._id" class="edit-form">
           <input
             type="text"
-            [(ngModel)]="message.editedContent"
+            [ngModel]="editedContent()"
+            (ngModelChange)="editedContent.set($event)"
             (keyup.enter)="saveEdit(message)"
-            (keyup.escape)="cancelEdit(message)"
+            (keyup.escape)="cancelEdit()"
           />
           <div class="edit-actions">
             <button class="save-button" (click)="saveEdit(message)">
               Salvar
             </button>
-            <button class="cancel-button" (click)="cancelEdit(message)">
+            <button class="cancel-button" (click)="cancelEdit()">
               Cancelar
             </button>
           </div>
@@ -87,7 +78,7 @@
 
   <div class="message-input message-input-vertical">
     <div class="input-row">
-      <button class="private-message-button" (click)="goToPrivateMessages()">
+      <button class="private-message-button" routerLink="/private-messages">
         <i class="fas fa-envelope"></i> Mensagens Privadas
       </button>
     </div>
@@ -95,7 +86,8 @@
       <label for="message-type">Tipo Mensagem: </label>
       <select
         class="message-type-selector message-type-selector-below"
-        [(ngModel)]="selectedMessageType"
+        [ngModel]="selectedMessageType()"
+        (ngModelChange)="selectedMessageType.set($event)"
         id="message-type"
       >
         <option value="message">Mensagem</option>
@@ -106,7 +98,8 @@
     <div class="input-row">
       <input
         type="text"
-        [(ngModel)]="newMessage"
+        [ngModel]="newMessage()"
+        (ngModelChange)="newMessage.set($event)"
         placeholder="Digite sua mensagem..."
         (keyup.enter)="sendMessage()"
       />

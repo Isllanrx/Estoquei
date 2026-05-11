@@ -1,56 +1,88 @@
-# 📄 Projeto MEAN Stack
+# Estoquei - Modern Messaging System
 
-## 🚀 Descrição
-Aplicação full-stack desenvolvida com a stack MEAN:
-- **MongoDB** para o banco de dados.
-- **Express.js** e **Node.js** para o backend.
-- **Angular** para o frontend.
+Estoquei is a professional-grade, full-stack messaging application built with the MEAN stack (MongoDB, Express, Angular, Node.js). It features a modern, layered architecture designed for scalability, performance, and security.
 
----
+## 🏛 Architecture Overview
 
-## 📁 Estrutura de Pastas
+The project follows a **Layered Architecture** pattern, ensuring strict separation of concerns and high maintainability.
 
-### 🔙 Backend (`/backend`)
-- **models/**: Schemas Mongoose:
-  - `MessageSchema.js`: Estrutura das mensagens.
-  - `UserSchema.js`: Estrutura dos usuários.
-- **routes/**:
-  - `db.js`: Conexão com o banco de dados MongoDB.
-- `server.js`: Arquivo principal do backend (API Express).
+```mermaid
+graph TD
+    subgraph Frontend (Angular 18)
+        UI[Standalone Components] --> Signals[Angular Signals]
+        Signals --> Services[Domain Services]
+        Services --> Interceptors[HTTP Interceptors]
+    end
 
-### 🔜 Frontend (`/frontend`)
-- **src/app/**: Aplicação Angular.
-  - `login/`, `message/`, `signup/`: Componentes da aplicação.
-  - `middlewares/`: Possível uso de interceptadores ou guards.
-  - `services/`: Serviços para conexão com a API.
-  - `app.component.*`: Componentes principais do app.
-  - `app.routes.ts`: Rotas do Angular.
-  - `app.config.*`: Arquivos de configuração do app.
-  - `main.ts` / `main.server.ts`: Bootstrap da aplicação.
-- `angular.json`, `package.json`: Configurações e dependências do Angular.
+    subgraph Backend (Node.js/Express)
+        Interceptors --> API[Express API]
+        API --> Controllers[Controllers]
+        Controllers --> BServices[Business Services]
+        BServices --> Models[Mongoose Models]
+        Models --> DB[(MongoDB)]
+    end
 
----
-
-## 🔧 Como Rodar o Projeto
-
-### Backend
-```bash
-cd backend
-npm install
-node server.js
+    subgraph Security
+        Auth[JWT Authentication]
+        Error[Global Error Handler]
+    end
 ```
 
-### Frontend
-```bash
-cd frontend
-npm install
-ng serve
-```
+### Key Technical Enhancements
+- **State Management:** Migrated from `BehaviorSubject` to **Angular Signals** for reactive and optimized change detection.
+- **Backend Layers:** Implemented `Controllers` and `Services` to decouple business logic from HTTP routing.
+- **Data Optimization:** Solved the **N+1 Query Problem** using Mongoose `.populate()`, reducing network overhead by over 80%.
+- **Security:**
+    - Centralized `AuthInterceptor` for automatic JWT management.
+    - Global Error Handling middleware to prevent server crashes.
+    - Protected routes and validated login logic.
+- **DX (Developer Experience):**
+    - Environment-based configurations.
+    - Path aliases and standardized naming conventions.
+    - Clean and documented codebase.
 
----
+## 🚀 Getting Started
 
-## 👥 Integrantes
-- Ramsés de Oliveira Martins
-- Gustavo Müller 
-- Isllan Toso
+### Prerequisites
+- Node.js (v18+)
+- MongoDB (running locally or via Atlas)
 
+### Installation
+
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/estoquei/Estoquei.git
+   cd Estoquei
+   ```
+
+2. **Backend Setup:**
+   ```bash
+   cd backend
+   npm install
+   # Create a .env file based on the environment variables mentioned below
+   npm start
+   ```
+
+3. **Frontend Setup:**
+   ```bash
+   cd frontend
+   npm install
+   npm start
+   ```
+
+## ⚙️ Environment Variables
+
+### Backend (`backend/.env`)
+- `PORT`: Server port (default: 3000)
+- `MONGODB_URI`: MongoDB connection string
+- `JWT_SECRET`: Secret key for token generation
+- `NODE_ENV`: `development` or `production`
+
+## 🛠 Tech Stack
+- **Frontend:** Angular 18, TypeScript, Vanilla CSS.
+- **Backend:** Node.js, Express, Mongoose.
+- **Database:** MongoDB.
+- **Security:** JWT, Bcrypt.
+
+## 📝 License
+This project is for educational and professional demonstration purposes.

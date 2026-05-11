@@ -1,11 +1,10 @@
 import { CommonModule } from '@angular/common';
 import { HttpClient, HttpClientModule } from '@angular/common/http';
-import { Component, OnDestroy, OnInit, ViewChild, ElementRef, AfterViewInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnDestroy, OnInit, ViewChild, ElementRef, AfterViewInit, ChangeDetectorRef, effect, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
-import { Subscription } from 'rxjs';
-import { AuthService } from '../services/auth.service';
-import { LocalStorageService } from '../services/local-storage.service';
+import { AuthService, User } from '../services/auth.service';
+import { environment } from '../../environments/environment';
 
 interface MessageUser {
   _id: string;
@@ -24,14 +23,6 @@ interface Message {
   destination: string;
 }
 
-interface User {
-  _id: string;
-  nome: string;
-  email: string;
-  imagem: string;
-  token: string;
-}
-
 @Component({
   selector: 'app-private-message',
   standalone: true,
@@ -39,43 +30,35 @@ interface User {
   templateUrl: './private-message.component.html',
   styleUrl: './private-message.component.css'
 })
-export class PrivateMessageComponent implements OnInit, OnDestroy, AfterViewInit {
+export class PrivateMessageComponent implements OnInit, AfterViewInit {
+  private router = inject(Router);
+  private authService = inject(AuthService);
+  private http = inject(HttpClient);
+  private cdRef = inject(ChangeDetectorRef);
+
   messages: Message[] = [];
   users: User[] = [];
   selectedUser: User | null = null;
   newMessage: string = '';
-  currentUser: User | null = null;
+  currentUser = this.authService.currentUser;
   userCache: { [key: string]: MessageUser } = {};
-  private userSubscription?: Subscription;
-  private apiUrl = 'http://localhost:3000';
+  private apiUrl = environment.apiUrl;
   @ViewChild('messageList') messageListRef!: ElementRef;
   isLoading: boolean = false;
 
-  constructor(
-    private router: Router,
-    private authService: AuthService,
-    private localStorage: LocalStorageService,
-    private http: HttpClient,
-    private cdRef: ChangeDetectorRef
-  ) { }
-
-  ngOnInit() {
-    if (!this.authService.isAuthenticated()) {
-      this.router.navigate(['/login']);
-      return;
-    }
-
-    this.userSubscription = this.authService.currentUser$.subscribe(user => {
-      this.currentUser = user;
+  constructor() {
+    effect(() => {
+      const user = this.currentUser();
       if (user) {
         this.loadUsers();
       }
     });
   }
 
-  ngOnDestroy() {
-    if (this.userSubscription) {
-      this.userSubscription.unsubscribe();
+  ngOnInit() {
+    if (!this.authService.checkAuthStatus()) {
+      this.authService.logout();
+      return;
     }
   }
 
@@ -92,17 +75,14 @@ export class PrivateMessageComponent implements OnInit, OnDestroy, AfterViewInit
   }
 
   loadUsers() {
-    this.http.get(`${this.apiUrl}/api/usuarios`, {
-      headers: this.authService.getAuthHeaders()
-    }).subscribe({
-      next: (response: any) => {
-        this.users = response.filter((user: User) => user._id !== this.currentUser?._id);
+    this.http.get<User[]>(`${this.apiUrl}/api/usuarios`).subscribe({
+      next: (response) => {
+        this.users = response.filter((user: User) => user._id !== this.currentUser()?._id);
       },
       error: (error) => {
         console.error('Error loading users:', error);
         if (error.status === 401) {
           this.authService.logout();
-          this.router.navigate(['/login']);
         } else {
           alert('Erro ao carregar lista de usuários');
         }
@@ -118,33 +98,16 @@ export class PrivateMessageComponent implements OnInit, OnDestroy, AfterViewInit
   async loadMessages(showLoading: boolean = false) {
     if (!this.selectedUser) return;
     this.isLoading = true;
-    this.http.get(`${this.apiUrl}/api/mensagens/private/${this.selectedUser._id}`, {
-      headers: this.authService.getAuthHeaders()
-    })
+    this.http.get<any[]>(`${this.apiUrl}/api/mensagens/private/${this.selectedUser._id}`)
       .subscribe({
-        next: async (response: any) => {
+        next: async (response) => {
           const messagesPromises = response.map(async (msg: any) => {
-            let user = this.userCache[msg.autorId];
-            if (!user) {
-              try {
-                const userData: any = await this.http.get(`${this.apiUrl}/api/usuarios/${msg.autorId}`, {
-                  headers: this.authService.getAuthHeaders()
-                }).toPromise();
-                user = {
-                  _id: userData._id,
-                  nome: userData.nome,
-                  imagem: userData.imagem || '/images/padrao.png'
-                };
-                this.userCache[msg.autorId] = user;
-              } catch (error) {
-                console.error('Error loading user:', error);
-                user = {
-                  _id: msg.autorId,
-                  nome: 'Usuário',
-                  imagem: '/images/padrao.png'
-                };
-              }
-            }
+            const user = {
+              _id: msg.autorId._id,
+              nome: msg.autorId.nome,
+              imagem: msg.autorId.imagem || '/images/padrao.png'
+            };
+
             return {
               id: msg._id,
               content: msg.content,
@@ -185,27 +148,26 @@ export class PrivateMessageComponent implements OnInit, OnDestroy, AfterViewInit
   }
 
   sendMessage() {
-    if (this.newMessage.trim() && this.currentUser?._id && this.selectedUser?._id) {
+    const user = this.currentUser();
+    if (this.newMessage.trim() && user?._id && this.selectedUser?._id) {
       const messageData = {
         texto: this.newMessage,
-        autorId: this.currentUser._id,
+        autorId: user._id,
         type: 'message',
         destination: this.selectedUser._id
       };
 
-      this.http.post(`${this.apiUrl}/api/mensagens`, messageData, {
-        headers: this.authService.getAuthHeaders()
-      })
+      this.http.post<any>(`${this.apiUrl}/api/mensagens`, messageData)
         .subscribe({
-          next: (response: any) => {
+          next: (response) => {
             const newMessage = {
               id: response._id,
               content: response.content,
               timestamp: new Date(response.createdAt || response.timestamp),
               user: {
-                _id: this.currentUser!._id,
-                nome: this.currentUser!.nome,
-                imagem: this.currentUser!.imagem || '/images/padrao.png'
+                _id: response.autorId._id,
+                nome: response.autorId.nome,
+                imagem: response.autorId.imagem || '/images/padrao.png'
               },
               type: response.type || 'message',
               destination: response.destination
@@ -235,4 +197,4 @@ export class PrivateMessageComponent implements OnInit, OnDestroy, AfterViewInit
     this.messages = [];
     this.newMessage = '';
   }
-} 
+}
