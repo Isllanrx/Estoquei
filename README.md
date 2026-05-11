@@ -1,34 +1,34 @@
-# Estoquei - Messaging System
+# Estoquei - Sistema de Mensageria
 
-Estoquei is a full-stack messaging platform developed using the MEAN stack (MongoDB, Express, Angular, Node.js). The system implements a layered architecture to ensure modularity, scalability, and maintainable code.
+Estoquei é uma plataforma de mensageria full-stack desenvolvida utilizando a stack MEAN (MongoDB, Express, Angular, Node.js). O sistema implementa uma arquitetura em camadas para garantir modularidade, escalabilidade e manutenção simplificada do código.
 
-## System Architecture
+## Arquitetura do Sistema
 
-The application follows a traditional client-server model with a decoupled frontend and backend. The backend manages data persistence and business logic, while the frontend handles user interaction and state management.
+A aplicação segue um modelo cliente-servidor tradicional com frontend e backend desacoplados. O backend gerencia a persistência de dados e a lógica de negócio, enquanto o frontend lida com a interação do usuário e o gerenciamento de estado.
 
 ```mermaid
 graph TD
     subgraph Client [Frontend - Angular 18]
         UI[Standalone Components]
-        Signals[State Management - Signals]
-        Services[API Services]
-        Interceptors[HTTP Interceptors]
+        Signals[Gerenciamento de Estado - Signals]
+        Services[Serviços de API]
+        Interceptors[Interceptadores HTTP]
         UI --> Signals
         Signals --> Services
         Services --> Interceptors
     end
 
     subgraph Server [Backend - Node.js/Express]
-        Routes[API Routes]
-        Controllers[Request Controllers]
-        BServices[Business Logic Services]
-        Models[Data Models - Mongoose]
+        Routes[Rotas da API]
+        Controllers[Controladores de Requisição]
+        BServices[Serviços de Lógica de Negócio]
+        Models[Modelos de Dados - Mongoose]
         Routes --> Controllers
         Controllers --> BServices
         BServices --> Models
     end
 
-    subgraph Persistence [Database]
+    subgraph Persistence [Banco de Dados]
         DB[(MongoDB)]
         Models --> DB
     end
@@ -36,113 +36,113 @@ graph TD
     Interceptors -- REST/HTTPS --> Routes
 ```
 
-## Technical Specifications
+## Especificações Técnicas
 
 ### Frontend
-- **Framework:** Angular 18 (Standalone Components architecture).
-- **State Management:** Angular Signals for reactive data flow.
-- **Communication:** HttpClient with centralized interceptors for JWT authentication.
-- **Styling:** Vanilla CSS for component-scoped and global styles.
-- **SSR:** Angular Universal/SSR support.
+- **Framework:** Angular 18 (arquitetura de Standalone Components).
+- **Gerenciamento de Estado:** Angular Signals para fluxo de dados reativo.
+- **Comunicação:** HttpClient com interceptadores centralizados para autenticação JWT.
+- **Estilização:** Vanilla CSS para estilos globais e escopados por componente.
+- **SSR:** Suporte a Angular Universal/SSR.
 
 ### Backend
 - **Runtime:** Node.js.
 - **Framework:** Express.js.
-- **Authentication:** JSON Web Tokens (JWT) with Bcrypt for password hashing.
-- **Middleware:** Centralized error handling and authentication guards.
-- **File Handling:** express-fileupload for media management.
+- **Autenticação:** JSON Web Tokens (JWT) com Bcrypt para hashing de senhas.
+- **Middleware:** Tratamento centralizado de erros e guardas de autenticação.
+- **Manipulação de Arquivos:** express-fileupload para gerenciamento de mídia.
 
-### Database
-- **Provider:** MongoDB.
+### Banco de Dados
+- **Provedor:** MongoDB.
 - **ODM:** Mongoose.
-- **Design:** Document-oriented with relational references (Population).
+- **Design:** Orientado a documentos com referências relacionais (Population).
 
-## Features
+## Funcionalidades
 
-- **User Authentication:** Secure signup and login with JWT.
-- **Real-time Messaging:** General and private messaging capabilities.
-- **Media Management:** Support for image uploads in messages.
-- **Role-based Access:** Middleware-level protection for routes and actions.
-- **Optimized Data Fetching:** Implementation of population to resolve N+1 query issues.
+- **Autenticação de Usuário:** Registro e login seguros com JWT.
+- **Mensageria em Tempo Real:** Capacidade de mensagens gerais e privadas.
+- **Gerenciamento de Mídia:** Suporte para upload de imagens em mensagens.
+- **Acesso Baseado em Regras:** Proteção de rotas e ações via middleware.
+- **Busca de Dados Otimizada:** Implementação de population para resolver problemas de consulta N+1.
 
-## Prerequisites
+## Pré-requisitos
 
-- Node.js v18.x or higher
-- npm v9.x or higher
-- MongoDB (Local instance or MongoDB Atlas)
+- Node.js v18.x ou superior
+- npm v9.x ou superior
+- MongoDB (Instância local ou MongoDB Atlas)
 
-## Installation and Configuration
+## Instalação e Configuração
 
-### 1. Clone the Repository
+### 1. Clonar o Repositório
 ```bash
 git clone https://github.com/estoquei/Estoquei.git
 cd Estoquei
 ```
 
-### 2. Backend Configuration
-Navigate to the backend directory and install dependencies:
+### 2. Configuração do Backend
+Navegue até o diretório do backend e instale as dependências:
 ```bash
 cd backend
 npm install
 ```
 
-Create a `.env` file in the `backend` directory:
+Crie um arquivo `.env` no diretório `backend`:
 ```env
 PORT=3000
-MONGODB_URI=your_mongodb_connection_string
-JWT_SECRET=your_jwt_secret_key
+MONGODB_URI=sua_string_de_conexao_mongodb
+JWT_SECRET=sua_chave_secreta_jwt
 ```
 
-### 3. Frontend Configuration
-Navigate to the frontend directory and install dependencies:
+### 3. Configuração do Frontend
+Navegue até o diretório do frontend e instale as dependências:
 ```bash
 cd ../frontend
 npm install
 ```
 
-## Running the Application
+## Executando a Aplicação
 
-### Development Environment
+### Ambiente de Desenvolvimento
 
-**Start Backend:**
+**Iniciar Backend:**
 ```bash
 cd backend
 npm run dev
 ```
 
-**Start Frontend:**
+**Iniciar Frontend:**
 ```bash
 cd frontend
 npm start
 ```
 
-The application will be available at `http://localhost:4200`.
+A aplicação estará disponível em `http://localhost:4200`.
 
-## Project Structure
+## Estrutura do Projeto
 
 ```text
 Estoquei/
 ├── backend/
-│   ├── controllers/    # Request handling logic
-│   ├── middlewares/    # Auth and error middlewares
-│   ├── models/         # Mongoose schemas
-│   ├── routes/         # Express route definitions
-│   ├── services/       # Business logic layer
-│   └── server.js       # Entry point
+│   ├── controllers/    # Lógica de manipulação de requisições
+│   ├── middlewares/    # Middlewares de autenticação e erro
+│   ├── models/         # Schemas do Mongoose
+│   ├── routes/         # Definições de rotas Express
+│   ├── services/       # Camada de lógica de negócio
+│   └── server.js       # Ponto de entrada
 ├── frontend/
 │   ├── src/
 │   │   ├── app/
-│   │   │   ├── login/           # Login component
-│   │   │   ├── signup/          # Signup component
-│   │   │   ├── message/         # General messaging component
-│   │   │   ├── private-message/ # Private messaging component
-│   │   │   ├── guards/          # Route protection
-│   │   │   ├── services/        # Data services
-│   │   │   └── app.routes.ts    # Frontend routing
-│   │   └── environments/        # Environment configurations
+│   │   │   ├── login/           # Componente de Login
+│   │   │   ├── signup/          # Componente de Cadastro
+│   │   │   ├── message/         # Componente de mensagens gerais
+│   │   │   ├── private-message/ # Componente de mensagens privadas
+│   │   │   ├── guards/          # Proteção de rotas
+│   │   │   ├── services/        # Serviços de dados
+│   │   │   └── app.routes.ts    # Roteamento frontend
+│   │   └── environments/        # Configurações de ambiente
 └── README.md
 ```
 
-## License
+## Licença
 
-This project is intended for educational and professional demonstration purposes.
+Este projeto é destinado a fins educacionais e demonstração profissional.
